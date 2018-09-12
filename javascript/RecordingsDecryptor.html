@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Twilio PKE Recording Decryptor</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+          <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <div class="container"> 
+            <br><br>
+            <p>
+                <font color="red"><h3>Twilio Recording Decryptor</h3></font>
+            </p>
+            <br/>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing">Encrypted CEK</span>
+                </div>
+                <textarea type="text" class="form-control" id="encryptedCEK"></textarea> 
+            </div>
+            <br/>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing">IV</span>
+                </div>
+                <input type="text" class="form-control" id="iv"></textarea> 
+            </div>
+            <br/>
+            <div class="input-group">
+                <input type="file" class="custom-file-input" id = "privateKeyFile">
+                <label class="custom-file-label" for="privateKeyFile">Choose Private Key PEM File(PKCS8)</label>
+            </div>
+            <br/>
+            <div class="input-group">
+                <input type="file" class="custom-file-input" id = "inputFile">
+                <label class="custom-file-label" for="inputFile">Choose Encrypted Recording File</label>
+            </div>
+            <br/>
+            <div class="row">
+                <button type="input" class="btn btn-primary btn-lg" onclick="decryptFile()">Decrypt</button>
+            </div>
+        </div>
+
+        <script>
+
+            const formatPrivateKey = pem => {
+                const lines = pem.split('\n');
+                let encodedString = '';
+                for(let i=0; i < lines.length; i++) {
+                    if (lines[i].indexOf('-----BEGIN PRIVATE KEY-----') < 0 && 
+                        lines[i].indexOf('-----END PRIVATE KEY-----') < 0) {
+                        encodedString += lines[i].trim();
+                    }
+                }
+                return atob(encodedString);
+            };
+
+            const stringToArrayBuffer = byteString =>{
+                const byteArray = new Uint8Array(byteString.length);
+                for(let i=0; i < byteString.length; i++) {
+                    byteArray[i] = byteString.charCodeAt(i);
+                }
+                return byteArray;
+            };
+
+            const importPrivateKey = keyFile => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.readAsText(keyFile)
+
+                    reader.onloadend = e => {
+                        const key = e.target.result;
+                        const formattedPrivateKey = formatPrivateKey(key)
+                        const privateKeyArrayBuffer = stringToArrayBuffer(formattedPrivateKey);
+                        return window.crypto.subtle.importKey(
+                                "pkcs8",
+                                privateKeyArrayBuffer,
+                                {
+                                    name: "RSA-OAEP",
+                                    hash: {name: "SHA-256"}
+                                },
+                                true,
+                                ["decrypt"]
+                        )
+                        .then(privateKey => {
+                            resolve(privateKey)
+                        })
+                        .catch(err => reject(err));
+                    }
+                });
+            };
+
+            const decryptCEK = (cek, cryptoKey) => {
+                return window.crypto.subtle.decrypt(
+                    {
+                        name: 'RSA-OAEP'
+                    },
+                    cryptoKey,
+                    stringToArrayBuffer(atob(cek))
+                );
+            };
+
+            const importCEK = (cek) => {
+                return window.crypto.subtle.importKey(
+                        "raw",
+                        cek,
+                        {
+                            name: "AES-GCM",
+                            hash: {name: "SHA-256"}
+                        },
+                        true,
+                        ["decrypt"]
+                );
+            };
+
+            const decryptAudio = (audio, cek, iv) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsArrayBuffer(audio);
+
+                    reader.onloadend = e => {
+                        const audioFile = e.target.result;
+                        window.crypto.subtle.decrypt(
+                            {
+                                name: 'AES-GCM',
+                                iv: stringToArrayBuffer(atob(iv)),
+                            },
+                            cek,
+                            audioFile
+                        )
+                        .then(decryptedAudio => {
+                            resolve(decryptedAudio)
+                        })
+                        .catch(err => reject(err));
+                    }
+                });
+            };
+
+            const decryptFile = () => { 
+                const audioFile = document.getElementById("inputFile").files[0];
+                const privateKeyFile = document.getElementById("privateKeyFile").files[0];
+                const encryptedCEK = document.getElementById("encryptedCEK").value.trim();
+                const encryptionIV = document.getElementById("iv").value.trim();
+
+                importPrivateKey(privateKeyFile)
+                .then(importedKey => {
+                    console.log('importedKey', importedKey);
+
+                    return decryptCEK(encryptedCEK, importedKey);
+                })
+                .then(decryptedCEK => {
+                    console.log('decryptedCEK', decryptedCEK);
+
+                    return importCEK(decryptedCEK);
+                })
+                .then(importedCEK => {
+                    console.log('importedCEK', importedCEK);
+                    return decryptAudio(audioFile, importedCEK, encryptionIV)
+                })
+                .then(decryptedAudio => {
+                    console.log('audio decrypted!');
+                    init();
+            		playByteArray(decryptedAudio);
+                })
+                .catch(err => {
+                    console.log('error decrypting audio', err);
+                });
+            };
+
+            // Copied from http://stackoverflow.com/questions/24151121/how-to-play-wav-audio-byte-array-via-javascript-html5
+            // Added by bkumar@twilio
+            var context;    // Audio context
+            var buf;        // Audio buffer
+
+            function init() {
+            if (!window.AudioContext) {
+                if (!window.webkitAudioContext) {
+                    alert("Your browser does not support any AudioContext and cannot play back this audio.");
+                    return;
+                }
+                    window.AudioContext = window.webkitAudioContext;
+                }
+                context = new AudioContext();
+            }
+
+            function playByteArray( bytes ) {
+                context.decodeAudioData(bytes, play);
+            }
+
+            function play( audioBuffer ) {
+                var source = context.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect( context.destination );
+                source.start(0);
+            }
+        </script>
+    </body>
+</html>
