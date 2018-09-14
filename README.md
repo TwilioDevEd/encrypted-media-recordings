@@ -22,7 +22,7 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -in private_key.pem -out private_k
 ```
 *Note: Webcrypto API used in Javascript code sample supports PKCS8 format. PKCS1 private key cannot be used here*
 
-###Upload and Choose public key to use for encryption
+### Upload and Choose public key to use for encryption
 
 - Create new credential, select type as Public Key, Copy the public key from the file and paste it in the Public Key Place holder
 
@@ -34,7 +34,7 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -in private_key.pem -out private_k
 
 *Click on the images above to directly go to the Console locations*
 
-###Per Recording Decryption
+### Per Recording Decryption
  - Download your recording file from Twilio Recording Url
 ```https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Recordings/{RecordingSid}.wav```
 
