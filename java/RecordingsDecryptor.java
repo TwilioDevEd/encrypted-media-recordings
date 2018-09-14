@@ -25,7 +25,7 @@ public class RecordingsDecryptor {
 
         System.out.println("Twilio Sample Code to Decrypt Twilio encrypted recordings");
 
-//        1) Obtain public_key_sid, encrypted_cek, iv parameters within EncryptionDetails via recordingStatusCallback or
+//        1) Obtain encrypted_cek, iv parameters within EncryptionDetails via recordingStatusCallback or
 //        by performing a GET on the recording resource
 
         final String encryptedCek = "dYiRmp39kCJt3HOT2VmBGp7SHVEzcuku4o5eRftvNvdes1aPKvrHJbvzqN8Bhr3tmVtSQnmP0oannvo098" +

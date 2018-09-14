@@ -11,7 +11,7 @@ def decrypt_recording():
     # Follow "Per Recording Decryption Steps"
     # https://www.twilio.com/docs/voice/tutorials/call-recording-encryption#per-recording-decryption-steps-customer
 
-    # 1) Obtain public_key_sid, encrypted_cek, iv parameters within EncryptionDetails via recordingStatusCallback or
+    # 1) Obtain encrypted_cek, iv parameters within EncryptionDetails via recordingStatusCallback or
     # by performing a GET on the recording resource
 
     encrypted_cek = "dYiRmp39kCJt3HOT2VmBGp7SHVEzcuku4o5eRftvNvdes1aPKvrHJbvzqN8Bhr3tmVtSQnmP0oannvo098oCTRJY" \

@@ -38,9 +38,9 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -in private_key.pem -out private_k
  - Download your recording file from Twilio Recording Url
 ```https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Recordings/{RecordingSid}.wav```
 
-- Extract **encrypted_cek** and **iv** from **encryption_details** section of Recording Status Callback or Recording Resource.
+- Extract **encrypted_cek** and **iv** from **encryption_details** properties of Recording Status Callback or Recording Resource.
  
-*Sample Recording Status Callback Response* 
+*Sample Recording Resource API Response* 
 
  ```json
 {
@@ -73,4 +73,4 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -in private_key.pem -out private_k
 }
  ```
  
- - Replace the sample code encryption parameters (encrypted_cek, iv, private key file path and encrypted file path) and decrypt your recordings
+ - Replace the sample code encryption parameters (encrypted_cek, iv, private key file path and encrypted recording file path) and decrypt your recordings

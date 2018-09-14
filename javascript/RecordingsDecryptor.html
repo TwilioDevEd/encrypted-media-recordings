@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- Follow "Per Recording Decryption Steps"
+ https://www.twilio.com/docs/voice/tutorials/call-recording-encryption#per-recording-decryption-steps-customer -->
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -140,11 +142,15 @@
             };
 
             const decryptFile = () => { 
+                // 1) Obtain encrypted_cek, iv parameters within EncryptionDetails via recordingStatusCallback or
+                // by performing a GET on the recording resource
                 const audioFile = document.getElementById("inputFile").files[0];
                 const privateKeyFile = document.getElementById("privateKeyFile").files[0];
                 const encryptedCEK = document.getElementById("encryptedCEK").value.trim();
                 const encryptionIV = document.getElementById("iv").value.trim();
 
+                // 2) Retrieve customer private key corresponding to public_key_sid and use it to decrypt base 64 decoded
+                // encrypted_cek via RSAES-OAEP-SHA256-MGF1
                 importPrivateKey(privateKeyFile)
                 .then(importedKey => {
                     console.log('importedKey', importedKey);
@@ -156,6 +162,8 @@
 
                     return importCEK(decryptedCEK);
                 })
+                // 3) Initialize a AES256-GCM SecretKey object with decrypted CEK and base 64 decoded iv
+                // and decrypt encrypted recording.
                 .then(importedCEK => {
                     console.log('importedCEK', importedCEK);
                     return decryptAudio(audioFile, importedCEK, encryptionIV)
@@ -170,10 +178,7 @@
                 });
             };
 
-            // Copied from http://stackoverflow.com/questions/24151121/how-to-play-wav-audio-byte-array-via-javascript-html5
-            // Added by bkumar@twilio
             var context;    // Audio context
-            var buf;        // Audio buffer
 
             function init() {
             if (!window.AudioContext) {
@@ -191,7 +196,7 @@
             }
 
             function play( audioBuffer ) {
-                var source = context.createBufferSource();
+                const source = context.createBufferSource();
                 source.buffer = audioBuffer;
                 source.connect( context.destination );
                 source.start(0);
