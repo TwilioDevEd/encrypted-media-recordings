@@ -16,18 +16,21 @@ def decrypt_recording():
     # 1) Obtain encrypted_cek, iv parameters within EncryptionDetails via recordingStatusCallback or
     # by performing a GET on the recording resource
 
-    encrypted_cek = "EbtJoGNWb8NiwTjDP3tb3mqtNtP5BBI3reukZqcXUyl7l9E/i9w7rBxIXXY7kMXIuhQ0omYkgSSXjmzhTMJDp7uZBZj9jqCrC4pz1Q3wVILMB6RYOQN2oXsLsp4dE1KpRb/P4E/EW1s9jACirUesvzzur1yVq3qE8ug58PYUAlppxbObT7H12P1+V0LfSZwlttaV+zksCLlKdhBw5zTu6Xt0OwZT5zyCVOk2BB0g+qiBdwqBecjkPhapdCvjven86JuLDtLqgdByM4VzQ7P3QizRgTwYz++S9aCAQXgjSzK8WL/YlAuQRV5gDaiHPOMe7dI3X/sS7uva43p7x5oqoQ=="
-    iv = "qypnAE1OJcp80C4e"
+    encrypted_cek = "dYiRmp39kCJt3HOT2VmBGp7SHVEzcuku4o5eRftvNvdes1aPKvrHJbvzqN8Bhr3tmVtSQnmP0oannvo098oCTRJY" \
+                    "sWIe0sWmnOpwWWC09YAOwowgRtYgY/gr+IR357exAJ/1L0cWVz5MuSHFBN2Vbd673WhK51QzOXi9H+wuXEhGJmiV" \
+                    "KK38BmMVYg2EopFXKVlwA/kOQHVvRlyQ6RlNB1pvLFY/isnJ3FCldyyayf/LqvFXU2ZAVl446Z0ZLpQCJBR3wIIZ" \
+                    "cABaEGYtzAjBLWEHkc9FICfM5xMWGfHzgYzmgTfIn8ldMUXPYbU0kh67ErbEa6v0w5zDifOQxsX5Cg=="
+    iv = "uFM4mEKKptceQs/L"
 
     # 2) Retrieve customer private key corresponding to public_key_sid and use it to decrypt base 64 decoded
     # encrypted_cek via RSAES-OAEP-SHA256-MGF1
 
-    private_key = open("/Users/pyoon/private_key.pem", mode="rb")
+    private_key = open("/Users/bkumar/Desktop/private_key.pem", mode="rb")
     key = serialization.load_pem_private_key(private_key.read(), password=None, backend=default_backend())
     private_key.close()
 
-    encrypted_recording_file_path = "/Users/pyoon/Desktop/RE9e9d8986ad2e98e922bc4a7bc997d842.wav"
-    decrypted_recording_file_path = "/Users/pyoon/Desktop/RE9e9d8986ad2e98e922bc4a7bc997d842-decrypted.wav"
+    encrypted_recording_file_path = "/Users/bkumar/Desktop/RE41523cf58cc74597e38b957be84d6d13.wav"
+    decrypted_recording_file_path = "/Users/bkumar/Desktop/RE41523cf58cc74597e38b957be84d6d13-decrypted.wav"
 
     decrypted_cek = key.decrypt(
         base64.b64decode(encrypted_cek),
