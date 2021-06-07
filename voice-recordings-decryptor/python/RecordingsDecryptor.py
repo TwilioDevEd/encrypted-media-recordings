@@ -1,3 +1,5 @@
+import base64
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -23,7 +25,7 @@ def decrypt_recording():
     # 2) Retrieve customer private key corresponding to public_key_sid and use it to decrypt base 64 decoded
     # encrypted_cek via RSAES-OAEP-SHA256-MGF1
 
-    private_key = open("/Users/bkumar/Desktop/private_key.pem", mode="r")
+    private_key = open("/Users/bkumar/Desktop/private_key.pem", mode="rb")
     key = serialization.load_pem_private_key(private_key.read(), password=None, backend=default_backend())
     private_key.close()
 
@@ -31,7 +33,7 @@ def decrypt_recording():
     decrypted_recording_file_path = "/Users/bkumar/Desktop/RE41523cf58cc74597e38b957be84d6d13-decrypted.wav"
 
     decrypted_cek = key.decrypt(
-        encrypted_cek.decode('base64'),
+        base64.b64decode(encrypted_cek),
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
@@ -43,7 +45,7 @@ def decrypt_recording():
 
     decryptor = Cipher(
         algorithms.AES(decrypted_cek),
-        modes.GCM(iv.decode('base64')),
+        modes.GCM(base64.b64decode(iv)),
         backend=default_backend()
     ).decryptor()
 
@@ -52,7 +54,7 @@ def decrypt_recording():
     decrypted_recording_file = open(decrypted_recording_file_path, "wb")
     encrypted_recording_file = open(encrypted_recording_file_path, "rb")
 
-    for chunk in iter(lambda: encrypted_recording_file.read(4 * 1024), ''):
+    for chunk in iter(lambda: encrypted_recording_file.read(4 * 1024), b''):
         decrypted_chunk = decryptor.update(chunk)
         decrypted_recording_file.write(decrypted_chunk)
 
