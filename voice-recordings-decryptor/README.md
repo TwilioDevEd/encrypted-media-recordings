@@ -4,6 +4,8 @@ Twilio provides additional security on your voice recordings by encrypting them 
 
 For more detailed information, please see our documentation on [Voice Recording Encryption](https://www.twilio.com/docs/voice/tutorials/voice-recording-encryption).
 
+*Note* These examples are for illustrating the key steps in recording decryption, rather than providing fully-built, production-grade solutions. It will be up to your engineering team to decide on preferred decryption libraries and specific implementation. 
+
 ## Sample Code
 
 To use the sample code provided in this repository, you should replace the encryption parameters with your information (`encrypted_cek`, `iv`, the private key file path and encrypted recording file path).
